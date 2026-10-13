@@ -91,6 +91,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+  /* Bật AFIO Clock và tắt JTAG để dùng PB3 (DIG4) và PB4 (DS) */
+    __HAL_RCC_AFIO_CLK_ENABLE();
+    __HAL_AFIO_REMAP_SWJ_NOJTAG();
   FSM_Init();
   HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
@@ -151,6 +154,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM2)
     {
         FSM_Run_1s();
+    }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == BTN_PED_Pin)
+    {
+        FSM_TriggerPedestrian(); // Rút ngắn pha xanh an toàn, chuyển vàng rồi sang đi bộ
+    }
+    else if (GPIO_Pin == BTN_NIGHT_Pin)
+    {
+        static uint8_t isNight = 0;
+        isNight = !isNight;
+        if (isNight) {
+            FSM_SetNightMode();  // Nháy vàng 1Hz
+        } else {
+            FSM_SetAutoMode();   // Quay lại chu kỳ tự động
+        }
     }
 }
 /* USER CODE END 4 */
