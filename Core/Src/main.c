@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
+  * ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
-  ******************************************************************************
+  * ******************************************************************************
   * @attention
   *
   * Copyright (c) 2026 STMicroelectronics.
@@ -13,7 +13,7 @@
   * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
-  ******************************************************************************
+  * ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -46,7 +46,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+// Note: Global variables (currentState, timeLaneA, timeLaneB, cfgRedTime, cfgGreenTime, cfgYellowTime)
+// are defined in fsm.c and shared via fsm.h to prevent multiple definition errors.
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -105,7 +106,9 @@ UART_SendString("System Started!\r\n");
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-UART_Process_Command();
+    // Continuously check and process incoming UART commands
+    UART_Process_Command();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -211,6 +214,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
+
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
