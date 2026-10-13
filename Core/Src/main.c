@@ -25,7 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "uart_app.h"
-#include "fsm.h" 
+#include "fsm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -92,10 +92,14 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_TIM2_Init();
-  
   /* USER CODE BEGIN 2 */
-  UART_App_Init();
-  UART_SendString("System Started with FSM & UART Integration!\r\n");
+  /* Bật AFIO Clock và tắt JTAG để dùng PB3 (DIG4) và PB4 (DS) */
+    __HAL_RCC_AFIO_CLK_ENABLE();
+    __HAL_AFIO_REMAP_SWJ_NOJTAG();
+  FSM_Init();
+  HAL_TIM_Base_Start_IT(&htim2);
+UART_App_Init();
+UART_SendString("System Started!\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -152,7 +156,48 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance == TIM2)
+	    {
+	        // -------------------------------------------------------------
+	        // TẦNG 1: NHỊP 1 MS (Dành cho SV2 quét LED 7 đoạn qua 74HC595)
+	        // -------------------------------------------------------------
+	        // LED7_Scan_1ms(); // Khi ghép code, SV2 sẽ đặt hàm quét vào đây
 
+	        // -------------------------------------------------------------
+	        // TẦNG 2: NHỊP 1 S (Dành cho FSM của SV1)
+	        // -------------------------------------------------------------
+	        static uint16_t tick_1ms = 0;
+	        tick_1ms++;
+
+	        if (tick_1ms >= 1000) // Đếm đủ 1000 lần 1ms = đúng 1.0 giây
+	        {
+	            tick_1ms = 0;
+	            FSM_Run_1s();     // Chạy máy trạng thái FSM chu kỳ 1s
+	        }
+	    }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == BTN_PED_Pin)
+    {
+        FSM_TriggerPedestrian(); // Rút ngắn pha xanh an toàn, chuyển vàng rồi sang đi bộ
+    }
+    else if (GPIO_Pin == BTN_NIGHT_Pin)
+    {
+        // Kiểm tra trực tiếp trạng thái hiện tại của FSM
+        if (currentState == STATE_NIGHT_MODE)
+        {
+            FSM_SetAutoMode();   // Đang ở chế độ đêm thì quay lại tự động
+        }
+        else
+        {
+            FSM_SetNightMode();  // Đang chạy tự động thì chuyển sang chế độ đêm
+        }
+    }
+}
 /* USER CODE END 4 */
 
 /**
