@@ -24,6 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "uart_app.h"
 #include "fsm.h"
 /* USER CODE END Includes */
 
@@ -96,12 +97,15 @@ int main(void)
     __HAL_AFIO_REMAP_SWJ_NOJTAG();
   FSM_Init();
   HAL_TIM_Base_Start_IT(&htim2);
+UART_App_Init();
+UART_SendString("System Started!\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+UART_Process_Command();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
