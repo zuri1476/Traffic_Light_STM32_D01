@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -42,12 +43,14 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
 /* USER CODE BEGIN PV */
-int red_duration = 5;
-int green_duration = 5;
-int yellow_duration = 2;
-int current_state = 0;
-int remaining_time = 0;
+uint8_t currentState = 0;
+uint8_t timeLaneA = 30;
+uint8_t timeLaneB = 30;
+uint8_t cfgRedTime = 30;
+uint8_t cfgGreenTime = 27;
+uint8_t cfgYellowTime = 3;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -91,7 +94,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
-  
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   UART_App_Init();
   UART_SendString("System Started!\r\n");
@@ -167,7 +170,6 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
