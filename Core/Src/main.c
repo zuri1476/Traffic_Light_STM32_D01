@@ -151,10 +151,25 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim->Instance == TIM2)
-    {
-        FSM_Run_1s();
-    }
+	if (htim->Instance == TIM2)
+	    {
+	        // -------------------------------------------------------------
+	        // TẦNG 1: NHỊP 1 MS (Dành cho SV2 quét LED 7 đoạn qua 74HC595)
+	        // -------------------------------------------------------------
+	        // LED7_Scan_1ms(); // Khi ghép code, SV2 sẽ đặt hàm quét vào đây
+
+	        // -------------------------------------------------------------
+	        // TẦNG 2: NHỊP 1 S (Dành cho FSM của SV1)
+	        // -------------------------------------------------------------
+	        static uint16_t tick_1ms = 0;
+	        tick_1ms++;
+
+	        if (tick_1ms >= 1000) // Đếm đủ 1000 lần 1ms = đúng 1.0 giây
+	        {
+	            tick_1ms = 0;
+	            FSM_Run_1s();     // Chạy máy trạng thái FSM chu kỳ 1s
+	        }
+	    }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -165,12 +180,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
     else if (GPIO_Pin == BTN_NIGHT_Pin)
     {
-        static uint8_t isNight = 0;
-        isNight = !isNight;
-        if (isNight) {
-            FSM_SetNightMode();  // Nháy vàng 1Hz
-        } else {
-            FSM_SetAutoMode();   // Quay lại chu kỳ tự động
+        // Kiểm tra trực tiếp trạng thái hiện tại của FSM
+        if (currentState == STATE_NIGHT_MODE)
+        {
+            FSM_SetAutoMode();   // Đang ở chế độ đêm thì quay lại tự động
+        }
+        else
+        {
+            FSM_SetNightMode();  // Đang chạy tự động thì chuyển sang chế độ đêm
         }
     }
 }

@@ -77,8 +77,10 @@ void Error_Handler(void);
 #define DIG3_GPIO_Port GPIOB
 #define BTN_PED_Pin GPIO_PIN_12
 #define BTN_PED_GPIO_Port GPIOB
+#define BTN_PED_EXTI_IRQn EXTI15_10_IRQn
 #define BTN_NIGHT_Pin GPIO_PIN_13
 #define BTN_NIGHT_GPIO_Port GPIOB
+#define BTN_NIGHT_EXTI_IRQn EXTI15_10_IRQn
 #define BUZZER_Pin GPIO_PIN_14
 #define BUZZER_GPIO_Port GPIOB
 #define DIG4_Pin GPIO_PIN_3
