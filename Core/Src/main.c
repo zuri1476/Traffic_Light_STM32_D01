@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
+  * ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
-  * @*****************************************************************************
+  * ******************************************************************************
   * @attention
   *
   * Copyright (c) 2026 STMicroelectronics.
@@ -13,7 +13,7 @@
   * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
-  * @*****************************************************************************
+  * ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "uart_app.h"
+#include "fsm.h" // Include FSM header to access shared variables and API functions
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,12 +46,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t currentState = 0;
-uint8_t timeLaneA = 30;
-uint8_t timeLaneB = 30;
-uint8_t cfgRedTime = 30;
-uint8_t cfgGreenTime = 27;
-uint8_t cfgYellowTime = 3;
+// Note: Global variables (currentState, timeLaneA, timeLaneB, cfgRedTime, cfgGreenTime, cfgYellowTime)
+// are defined in fsm.c and shared via fsm.h to prevent multiple definition errors.
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,15 +92,17 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_TIM2_Init();
+  
   /* USER CODE BEGIN 2 */
   UART_App_Init();
-  UART_SendString("System Started!\r\n");
+  UART_SendString("System Started with FSM & UART Integration!\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    // Continuously check and process incoming UART commands
     UART_Process_Command();
 
     /* USER CODE END WHILE */
@@ -170,6 +169,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
+
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
