@@ -25,7 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "uart_app.h"
-#include "fsm.h" // Include FSM header to access shared variables and API functions
+#include "fsm.h" 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
