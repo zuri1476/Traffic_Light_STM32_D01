@@ -429,6 +429,17 @@
               <FileType>5</FileType>
               <FilePath>..\Core\Inc\uart_app.h</FilePath>
             </File>
+            <!-- Module xử lý nút nhấn của SV3. -->
+            <File>
+              <FileName>button_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\button_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>button_exti.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Core\Inc\button_exti.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
