@@ -1,19 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
-  * ******************************************************************************
+  ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
-  * ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  * ******************************************************************************
+  ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -24,9 +14,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "uart_app.h"
-#include "fsm.h"
-#include "button_exti.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,8 +35,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-// Note: Global variables (currentState, timeLaneA, timeLaneB, cfgRedTime, cfgGreenTime, cfgYellowTime)
-// are defined in fsm.c and shared via fsm.h to prevent multiple definition errors.
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -94,27 +81,42 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  /* Bật AFIO Clock và tắt JTAG để dùng PB3 (DIG4) và PB4 (DS) */
-    __HAL_RCC_AFIO_CLK_ENABLE();
-    __HAL_AFIO_REMAP_SWJ_NOJTAG();
-  FSM_Init();
-  /* Khởi tạo nút nhấn trước khi bật TIM2. */
-  Button_Init();
-  HAL_TIM_Base_Start_IT(&htim2);
-UART_App_Init();
-UART_SendString("System Started!\r\n");
+  // Khởi tạo LED 7 đoạn
+  led7seg_init();
+
+  // Khai báo thời gian đếm lùi ban đầu cho 2 hướng
+  uint8_t timeA = 30;
+  uint8_t timeB = 27;
+  
+  uint32_t speed_counter = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // Continuously check and process incoming UART commands
-    UART_Process_Command();
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+      // 1. Quét đủ 4 con LED liên tục để hiển thị sắc nét không bị nhòe
+      for (uint8_t i = 0; i < 4; i++)
+      {
+          led7seg_scan();
+          for (volatile uint32_t d = 0; d < 200; d++); // Độ trễ giữ sáng từng LED
+      }
+
+      // 2. Truyền thời gian mới nhất vào bộ đệm của driver
+      led7seg_set_time(timeA, timeB);
+
+      // 3. Bộ đếm thời gian thực tế đếm lùi
+      speed_counter++;
+      if (speed_counter >= 120) 
+      {
+          speed_counter = 0;
+          
+          if (timeA > 0) timeA--; else timeA = 30;
+          if (timeB > 0) timeB--; else timeB = 27;
+      }
   }
   /* USER CODE END 3 */
 }
@@ -159,36 +161,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	if (htim->Instance == TIM2)
-	    {
-	        // -------------------------------------------------------------
-	        // TẦNG 1: NHỊP 1 MS (Dành cho SV2 quét LED 7 đoạn qua 74HC595)
-	        // -------------------------------------------------------------
-	        /* Kiểm tra chống dội nút nhấn mỗi 1 ms. */
-	        Button_DebounceTask1ms();
-	        // LED7_Scan_1ms(); // Khi ghép code, SV2 sẽ đặt hàm quét vào đây
 
-	        // -------------------------------------------------------------
-	        // TẦNG 2: NHỊP 1 S (Dành cho FSM của SV1)
-	        // -------------------------------------------------------------
-	        static uint16_t tick_1ms = 0;
-	        tick_1ms++;
-
-	        if (tick_1ms >= 1000) // Đếm đủ 1000 lần 1ms = đúng 1.0 giây
-	        {
-	            tick_1ms = 0;
-	            FSM_Run_1s();     // Chạy máy trạng thái FSM chu kỳ 1s
-	        }
-	    }
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    /* Chuyển ngắt EXTI sang module nút nhấn. */
-    Button_GPIO_EXTI_Callback(GPIO_Pin);
-}
 /* USER CODE END 4 */
 
 /**

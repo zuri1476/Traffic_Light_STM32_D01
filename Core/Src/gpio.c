@@ -57,7 +57,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, DIG1_Pin|DIG2_Pin|DIG3_Pin|DIG4_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, BUZZER_Pin|DS_Pin|SHCP_Pin|STCP_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, BUZZER_Pin|GPIO_PIN_4|SHCP_Pin|STCP_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : RED_A_Pin YEL_A_Pin GRE_A_Pin RED_B_Pin
                            YEL_B_Pin GRE_B_Pin */
@@ -69,9 +69,9 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DIG1_Pin DIG2_Pin DIG3_Pin BUZZER_Pin
-                           DIG4_Pin DS_Pin SHCP_Pin STCP_Pin */
+                           DIG4_Pin PB4 SHCP_Pin STCP_Pin */
   GPIO_InitStruct.Pin = DIG1_Pin|DIG2_Pin|DIG3_Pin|BUZZER_Pin
-                          |DIG4_Pin|DS_Pin|SHCP_Pin|STCP_Pin;
+                          |DIG4_Pin|GPIO_PIN_4|SHCP_Pin|STCP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

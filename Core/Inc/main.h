@@ -85,8 +85,6 @@ void Error_Handler(void);
 #define BUZZER_GPIO_Port GPIOB
 #define DIG4_Pin GPIO_PIN_3
 #define DIG4_GPIO_Port GPIOB
-#define DS_Pin GPIO_PIN_4
-#define DS_GPIO_Port GPIOB
 #define SHCP_Pin GPIO_PIN_5
 #define SHCP_GPIO_Port GPIOB
 #define STCP_Pin GPIO_PIN_6
