@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body
+  * @brief          : Main program body for STM32 Traffic Light System
   ******************************************************************************
   */
 /* USER CODE END Header */
@@ -14,7 +14,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "uart_app.h"
+#include "fsm.h"
+#include "button_exti.h"
+#include "led7seg_595.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,7 +36,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -55,7 +57,6 @@ void SystemClock_Config(void);
   */
 int main(void)
 {
-
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -80,49 +81,42 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_TIM2_Init();
+
   /* USER CODE BEGIN 2 */
-  // Khởi tạo LED 7 đoạn
+  /* Bật AFIO Clock và tắt JTAG để dùng PB3 (DIG4) và PB4 (DS) */
+  __HAL_RCC_AFIO_CLK_ENABLE();
+  __HAL_AFIO_REMAP_SWJ_NOJTAG();
+
+  /* Khởi tạo module LED 7 đoạn */
   led7seg_init();
 
-  // Khai báo thời gian đếm lùi ban đầu cho 2 hướng
-  uint8_t timeA = 30;
-  uint8_t timeB = 27;
-  
-  uint32_t speed_counter = 0;
+  /* Khởi tạo các module hệ thống (FSM, Nút nhấn, UART) */
+  FSM_Init();
+  Button_Init();
+  UART_App_Init();
+  UART_SendString("System Started!\r\n");
+
+  /* Khởi động Timer 2 ở chế độ ngắt định kỳ 1 ms (đặt sau cùng,
+     vì ngắt gọi led7seg_scan() và Button_DebounceTask1ms()) */
+  HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    /* Liên tục kiểm tra và xử lý các lệnh UART gửi xuống */
+    UART_Process_Command();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-      // 1. Quét đủ 4 con LED liên tục để hiển thị sắc nét không bị nhòe
-      for (uint8_t i = 0; i < 4; i++)
-      {
-          led7seg_scan();
-          for (volatile uint32_t d = 0; d < 200; d++); // Độ trễ giữ sáng từng LED
-      }
-
-      // 2. Truyền thời gian mới nhất vào bộ đệm của driver
-      led7seg_set_time(timeA, timeB);
-
-      // 3. Bộ đếm thời gian thực tế đếm lùi
-      speed_counter++;
-      if (speed_counter >= 120) 
-      {
-          speed_counter = 0;
-          
-          if (timeA > 0) timeA--; else timeA = 30;
-          if (timeB > 0) timeB--; else timeB = 27;
-      }
   }
   /* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
+  * @brief System Clock Configuration (HSE 8 MHz, PLL x9 = 72 MHz)
   * @retval None
   */
 void SystemClock_Config(void)
@@ -130,9 +124,6 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
@@ -145,8 +136,6 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -161,7 +150,31 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance == TIM2)
+  {
+    /* TẦNG 1: nhịp 1 ms - quét LED 7 đoạn và chống dội nút nhấn */
+    led7seg_scan();
+    Button_DebounceTask1ms();
 
+    /* TẦNG 2: nhịp 1 s - máy trạng thái FSM đếm lùi */
+    static uint16_t tick_1ms = 0;
+    tick_1ms++;
+
+    if (tick_1ms >= 1000)   /* đủ 1000 lần 1 ms = 1,0 giây */
+    {
+      tick_1ms = 0;
+      FSM_Run_1s();
+    }
+  }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  /* Chuyển ngắt EXTI sang module xử lý nút nhấn */
+  Button_GPIO_EXTI_Callback(GPIO_Pin);
+}
 /* USER CODE END 4 */
 
 /**
@@ -171,26 +184,21 @@ void SystemClock_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
   while (1)
   {
   }
   /* USER CODE END Error_Handler_Debug */
 }
+
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

@@ -415,6 +415,11 @@
               <FilePath>..\Core\Inc\button_exti.h</FilePath>
             </File>
             <File>
+              <FileName>fsm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\fsm.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>
@@ -496,9 +501,19 @@
               <FilePath>../Core/Src/stm32f1xx_hal_msp.c</FilePath>
             </File>
             <File>
-              <FileName>fsm.c</FileName>
+              <FileName>led7seg_595.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Core\Src\fsm.c</FilePath>
+              <FilePath>..\Core\Src\led7seg_595.c</FilePath>
+            </File>
+            <File>
+              <FileName>fsm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Core\Inc\fsm.h</FilePath>
+            </File>
+            <File>
+              <FileName>led7seg_595.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Core\Inc\led7seg_595.h</FilePath>
             </File>
           </Files>
         </Group>
