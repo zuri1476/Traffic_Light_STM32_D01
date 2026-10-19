@@ -30,52 +30,52 @@ static TrafficState_t nextStateAfterPed = STATE_AUTO_RED_GREEN;
  * @brief Điều khiển 6 LED giao thông (PA0 - PA5) và Còi Buzzer (PB14)
  */
 void FSM_UpdateOutputs(void) {
-    // SỬA LỖI 1: Xử lý riêng cho Night Mode để đèn Vàng nhấp nháy chuẩn 1Hz
+    // Xử lý riêng cho Night Mode để đèn Vàng nhấp nháy chuẩn 1Hz
     if (currentState == STATE_NIGHT_MODE) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_5, GPIO_PIN_RESET);
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1 | GPIO_PIN_4); // PA1, PA4 đảo trạng thái bật/tắt mỗi giây
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); // Tắt còi
+        HAL_GPIO_WritePin(GPIOA, RED_A_Pin | GRE_A_Pin | RED_B_Pin | GRE_B_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_TogglePin(GPIOA, YEL_A_Pin | YEL_B_Pin); // Đảo trạng thái 2 đèn Vàng mỗi giây
+        HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET); // Tắt còi
         return;
     }
 
     // Tắt toàn bộ 6 chân đèn trước khi kích hoạt trạng thái mới
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 |
-                             GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, RED_A_Pin | YEL_A_Pin | GRE_A_Pin |
+                             RED_B_Pin | YEL_B_Pin | GRE_B_Pin, GPIO_PIN_RESET);
 
     switch (currentState) {
         case STATE_AUTO_RED_GREEN:
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);   // Tuyến A: ĐỎ (PA0)
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);   // Tuyến B: XANH (PA5)
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(RED_A_GPIO_Port, RED_A_Pin, GPIO_PIN_SET);   // Tuyến A: ĐỎ (PA0)
+            HAL_GPIO_WritePin(GRE_B_GPIO_Port, GRE_B_Pin, GPIO_PIN_SET);   // Tuyến B: XANH (PA5)
+            HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
             break;
 
         case STATE_AUTO_RED_YELLOW:
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);   // Tuyến A: ĐỎ (PA0)
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);   // Tuyến B: VÀNG (PA4)
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(RED_A_GPIO_Port, RED_A_Pin, GPIO_PIN_SET);   // Tuyến A: ĐỎ (PA0)
+            HAL_GPIO_WritePin(YEL_B_GPIO_Port, YEL_B_Pin, GPIO_PIN_SET);   // Tuyến B: VÀNG (PA4)
+            HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
             break;
 
         case STATE_AUTO_GREEN_RED:
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);   // Tuyến A: XANH (PA2)
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET);   // Tuyến B: ĐỎ (PA3)
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GRE_A_GPIO_Port, GRE_A_Pin, GPIO_PIN_SET);   // Tuyến A: XANH (PA2)
+            HAL_GPIO_WritePin(RED_B_GPIO_Port, RED_B_Pin, GPIO_PIN_SET);   // Tuyến B: ĐỎ (PA3)
+            HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
             break;
 
         case STATE_AUTO_YELLOW_RED:
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);   // Tuyến A: VÀNG (PA1)
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET);   // Tuyến B: ĐỎ (PA3)
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(YEL_A_GPIO_Port, YEL_A_Pin, GPIO_PIN_SET);   // Tuyến A: VÀNG (PA1)
+            HAL_GPIO_WritePin(RED_B_GPIO_Port, RED_B_Pin, GPIO_PIN_SET);   // Tuyến B: ĐỎ (PA3)
+            HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
             break;
 
         case STATE_PEDESTRIAN:
             // Đỏ cả 2 tuyến cho phương tiện dừng hẳn
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);   // Tuyến A: ĐỎ
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET);   // Tuyến B: ĐỎ
-            HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);               // Còi Buzzer kêu ngắt quãng (PB14)
+            HAL_GPIO_WritePin(RED_A_GPIO_Port, RED_A_Pin, GPIO_PIN_SET);   // Tuyến A: ĐỎ
+            HAL_GPIO_WritePin(RED_B_GPIO_Port, RED_B_Pin, GPIO_PIN_SET);   // Tuyến B: ĐỎ
+            HAL_GPIO_TogglePin(BUZZER_GPIO_Port, BUZZER_Pin);              // Còi Buzzer kêu ngắt quãng (PB14)
             break;
 
         default:
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
             break;
     }
 }
@@ -139,6 +139,8 @@ void FSM_Run_1s(void) {
                     timeLaneA = TIME_PEDESTRIAN_CROSS;
                     timeLaneB = TIME_PEDESTRIAN_CROSS;
                 } else {
+                	// Áp dụng cấu hình UART mới ngay khi kết thúc pha vàng này (nếu có)
+                	FSM_ApplyPendingConfig();
                     currentState = STATE_AUTO_GREEN_RED;
                     timeLaneA = cfgGreenTime;
                     timeLaneB = cfgRedTime;
@@ -175,25 +177,24 @@ void FSM_Run_1s(void) {
             }
             break;
 
-        // --- CHẾ ĐỘ ƯU TIÊN NGƯỜI ĐI BỘ (10 GIÂY) ---
-        case STATE_PEDESTRIAN:
-            if (timeLaneA == 0 && timeLaneB == 0) {
-                pedestrianRequested = 0;
-                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
-
-                // Chuyển sang tuyến đúng lượt ưu tiên tiếp theo
-                currentState = nextStateAfterPed;
-                if (currentState == STATE_AUTO_GREEN_RED) {
-                    timeLaneA = cfgGreenTime;
-                    timeLaneB = cfgRedTime;
-                } else {
-                    FSM_ApplyPendingConfig();
-                    timeLaneA = cfgRedTime;
-                    timeLaneB = cfgGreenTime;
-                }
-            }
-            break;
-
+            // --- CHẾ ĐỘ ƯU TIÊN NGƯỜI ĐI BỘ (10 GIÂY) ---
+                    case STATE_PEDESTRIAN:
+                        if (timeLaneA == 0 && timeLaneB == 0) {
+                            pedestrianRequested = 0;
+                            HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
+                            // Áp dụng cấu hình thời gian mới (nếu có) trước khi nạp lại bộ đếm
+                            FSM_ApplyPendingConfig();
+                            // Chuyển sang tuyến đúng lượt ưu tiên tiếp theo
+                            currentState = nextStateAfterPed;
+                            if (currentState == STATE_AUTO_GREEN_RED) {
+                                timeLaneA = cfgGreenTime;
+                                timeLaneB = cfgRedTime;
+                            } else {
+                                timeLaneA = cfgRedTime;
+                                timeLaneB = cfgGreenTime;
+                            }
+                        }
+                        break;
         default:
             FSM_Init();
             break;
@@ -218,12 +219,15 @@ void FSM_SetAutoMode(void) {
 }
 
 uint8_t FSM_ConfigNextCycle(uint8_t red, uint8_t green, uint8_t yellow) {
-    if (red != (green + yellow)) {
-        return 0;
+    // 1. Đảm bảo nguyên tắc: T_Đỏ = T_Xanh + T_Vàng
+    // 2. Giới hạn red <= 99 (do LED 7 đoạn chỉ có 2 chữ số)
+    // 3. Giới hạn green >= 5 và yellow >= 1 để đủ thời gian an toàn
+    if ((red != (green + yellow)) || (red > 99) || (green < 5) || (yellow < 1)) {
+        return 0; // Báo lỗi cho module UART của SV4 biết thông số không hợp lệ
     }
-    nextRedTime    = red;
-    nextGreenTime  = green;
-    nextYellowTime = yellow;
+    nextRedTime     = red;
+    nextGreenTime   = green;
+    nextYellowTime  = yellow;
     isConfigPending = 1;
-    return 1;
+    return 1; // Hợp lệ, sẽ áp dụng ở chu kỳ kế tiếp
 }

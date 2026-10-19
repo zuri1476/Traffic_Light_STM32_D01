@@ -83,7 +83,9 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  /* Bật AFIO Clock và tắt JTAG để dùng PB3 (DIG4) và PB4 (DS) */
+    __HAL_RCC_AFIO_CLK_ENABLE();
+    __HAL_AFIO_REMAP_SWJ_NOJTAG();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -91,9 +93,6 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  /* Bật AFIO Clock và tắt JTAG để dùng PB3 (DIG4) và PB4 (DS) */
-    __HAL_RCC_AFIO_CLK_ENABLE();
-    __HAL_AFIO_REMAP_SWJ_NOJTAG();
   FSM_Init();
   HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
