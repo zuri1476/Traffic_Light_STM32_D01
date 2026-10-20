@@ -144,3 +144,10 @@ void Button_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     Button_StartDebounce(&nightButton);
   }
 }
+
+/* HAL calls this weak hook from HAL_GPIO_EXTI_IRQHandler(). Forward each
+ * hardware EXTI event to the button debounce state machine above. */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  Button_GPIO_EXTI_Callback(GPIO_Pin);
+}

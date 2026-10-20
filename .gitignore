@@ -1,2 +1,16 @@
-Debug/
+# Build directories & Object files
+MDK-ARM/STM32_Traffic_D01/
+*.o
+*.d
+*.axf
+*.hex
+*.map
+*.htm
+*.lnp
+*.dep
+*.bak
+*.sct.Bak
+
+# User specific project files
+*.uvguix.*
 .settings/
